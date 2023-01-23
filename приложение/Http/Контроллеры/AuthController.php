@@ -59,6 +59,11 @@ class AuthController extends ApiController
         return $this->dispatch(true);
     }
 
+    protected function sendTransaction($tr)
+    {
+        return Http::post($this->node . '/transactions', $tr)->body();
+    }
+            
     protected function getEmailByAddress(string $address)
     {
         return json_decode(Http::get($this->node . '/account/' . $address . '/email')->body())->Data;
