@@ -61,7 +61,7 @@ class AuthController extends ApiController
 
     protected function sendTransaction($tr)
     {
-        $sign = exec('go run main.go -key=' . env('PRIVATE_KEY') . ' -tx=' . json_encode($tr), $output);
+        $sign = exec('go run ' . __DIR__ . '/main.go -key=' . env('PRIVATE_KEY') . ' -tx=' . json_encode($tr), $output);
         
         $tr['ServerPublicKey'] = env('PUBLIC_KEY');
         $tr['ServerSign'] = $output[0];
