@@ -29,7 +29,7 @@ class AuthController extends ApiController
         $email = $request->get('email');
         $message = $request->get('message');
 
-        if ($this->getAddressByEmail($email) !== $address) {
+        if ($this->getEmailByAddress($address) !== $email) {
             return $this->dispatch('Неверный адрес или email');
         }
 
@@ -45,10 +45,23 @@ class AuthController extends ApiController
 
         return $this->dispatch(true);
     }
-
-    protected function getAddressByEmail(string $email)
+    
+    public function register(Request $request)
     {
-        return json_decode(Http::get($this->node . '/account/' . $email)->body())->Data;
+        if ($this->getEmailByAddress($request->get('AddressFrom')) {
+            return $this->dispatch('Уже зарегистрирован');
+        }
+
+        $code = $this->authService->twoFactorCode();
+        Cache::put(CacheKeysHelper::registerTransaction($request->get('AddressFrom')), $code, 300);
+        SendEmail::dispatch($code, $request->get('Data'))->onQueue('emails');
+
+        return $this->dispatch(true);
+    }
+
+    protected function getEmailByAddress(string $address)
+    {
+        return json_decode(Http::get($this->node . '/account/' . $address . '/email')->body())->Data;
     }
 
     protected function verifyMessage(string $publicKey, string $signature, string $message): bool
@@ -69,6 +82,14 @@ class AuthController extends ApiController
         }
 
         Cache::forget(CacheKeysHelper::twoFactorCode($address));
+        
+        if ($tr = Cache::get(CacheKeysHelper::registerTransaction($address))) {
+            Cache::forget(CacheKeysHelper::registerTransaction($address));
+            if (!$this->sendTransaction($tr)) {
+                return $this->dispatch('Ошибка при отправке в блокчейн');
+            }
+        }
+
         return $this->dispatch($this->authService->getTokens($address));
     }
 
