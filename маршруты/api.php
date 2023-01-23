@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/tokens', [\App\Http\Controllers\AuthController::class, 'getTokens']);
 Route::post('auth/refresh', [\App\Http\Controllers\AuthController::class, 'refresh']);
 Route::post('auth/code', [\App\Http\Controllers\AuthController::class, 'generateCode']);
+Route::post('auth/register', [\App\Http\Controllers\AuthController::class, 'register']);
 Route::post('auth/logout', [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('authCustom');
 
 Route::get('auth/message', [\App\Http\Controllers\AuthController::class, 'getMessageForSign']);
